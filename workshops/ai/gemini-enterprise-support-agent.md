@@ -4,7 +4,7 @@
 
 ## Exam relevance
 
-The PCA exam increasingly covers conversational AI use cases (customer support automation, internal knowledge assistants). Gemini Enterprise Agent Platform (formerly Vertex AI Search and Conversation) is Google's managed path for this — you should know its capabilities without writing custom NLU code.
+The PCA exam increasingly covers conversational AI use cases (customer support automation, internal knowledge assistants). Gemini Enterprise Agent Platform (formerly Vertex AI, and before that Vertex AI Search and Conversation) is Google's managed path for this — you should know its capabilities without writing custom NLU code. Google accepts both the old and new naming in transition-era exam questions, but expect "Gemini Enterprise" going forward.
 
 ## Objective
 
@@ -12,7 +12,7 @@ Build a chat agent that grounds its answers in a document and correctly maintain
 
 ## Prerequisites
 
-- A GCP project with the Vertex AI / Gemini Enterprise Agent Platform APIs enabled
+- A GCP project with the Gemini Enterprise Agent Platform (formerly Vertex AI) APIs enabled
 - A short FAQ document (PDF) to use as grounding data — a fake "product support FAQ" works fine
 
 ## Steps
@@ -54,4 +54,4 @@ Delete the agent and any associated data store from the console to avoid ongoing
 
 - Grounding data (documents/playbooks) removes the need to hand-write intents and entities.
 - Conversational state is handled by the platform — your job as an architect is choosing the right grounding sources and evaluating groundedness.
-- This is the "no-code/low-code" answer to conversational AI on the exam — reach for custom Vertex AI model pipelines only when this managed path can't meet a requirement.
+- This is the "no-code/low-code" answer to conversational AI on the exam — reach for a custom, code-first agent built with the Agent Development Kit (ADK) only when this managed path can't meet a requirement.
