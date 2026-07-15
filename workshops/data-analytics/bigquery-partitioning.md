@@ -20,8 +20,8 @@ Measure — not just describe — the drop in scanned bytes when querying a date
 ### 1. Stage the data in Cloud Storage (skip if using a public dataset)
 
 ```bash
-gsutil mb -l europe-west9 gs://pca-workshop-$RANDOM
-gsutil cp trips.csv gs://pca-workshop-<bucket-suffix>/trips.csv
+gcloud storage buckets create gs://pca-workshop-$RANDOM --location=europe-west9
+gcloud storage cp trips.csv gs://pca-workshop-<bucket-suffix>/trips.csv
 ```
 
 ### 2. Create a dataset
@@ -71,7 +71,7 @@ The bytes scanned drops sharply — BigQuery only reads the matching partition(s
 ```bash
 bq rm -f -t pca_dataset.trips_partitioned
 bq rm -f -d pca_dataset
-gsutil rm -r gs://pca-workshop-<bucket-suffix>
+gcloud storage rm -r gs://pca-workshop-<bucket-suffix>
 ```
 
 ## Key takeaways

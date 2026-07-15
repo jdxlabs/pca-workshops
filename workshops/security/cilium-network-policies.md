@@ -8,24 +8,25 @@ The PCA exam expects you to distinguish Kubernetes **NetworkPolicies** (L3/L4 fi
 
 ## Objective
 
-Run a local Kubernetes cluster with Cilium as the CNI, then watch — in real time via Hubble — a NetworkPolicy block traffic between two pods.
+Run a local Kubernetes cluster (via k3s) with Cilium as the CNI, then watch — in real time via Hubble — a NetworkPolicy block traffic between two pods.
 
 ## Prerequisites
 
-- [Kind](https://kind.sigs.k8s.io/) or Minikube installed locally
+- A Linux host or VM to install [k3s](https://k3s.io/) on
 - `kubectl`, `cilium` CLI, and `hubble` CLI installed
 
 ## Steps
 
-### 1. Create a Kind cluster without the default CNI
+### 1. Install k3s without its default CNI
 
 ```bash
-kind create cluster --config=- <<EOF
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-networking:
-  disableDefaultCNI: true
-EOF
+curl -sfL https://get.k3s.io | sh -s - \
+  --flannel-backend=none \
+  --disable-network-policy \
+  --disable=traefik
+
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
 ```
 
 ### 2. Install Cilium as the CNI
@@ -92,7 +93,7 @@ The request times out, and Hubble shows the flow as **DROPPED** in real time.
 ## Cleanup
 
 ```bash
-kind delete cluster
+/usr/local/bin/k3s-uninstall.sh
 ```
 
 ## Key takeaways

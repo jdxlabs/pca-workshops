@@ -27,9 +27,9 @@ gcloud iam service-accounts create mon-gsa-test
 Grant it a minimal role, e.g. read-only on a specific bucket:
 
 ```bash
-gsutil iam ch \
-  serviceAccount:mon-gsa-test@PROJECT_ID.iam.gserviceaccount.com:objectViewer \
-  gs://YOUR_BUCKET
+gcloud storage buckets add-iam-policy-binding gs://YOUR_BUCKET \
+  --member=serviceAccount:mon-gsa-test@PROJECT_ID.iam.gserviceaccount.com \
+  --role=roles/storage.objectViewer
 ```
 
 ### 2. Create the Kubernetes Service Account (KSA)

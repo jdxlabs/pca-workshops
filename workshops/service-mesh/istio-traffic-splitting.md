@@ -12,7 +12,7 @@ Deploy a multi-version microservice app and split traffic between two versions b
 
 ## Prerequisites
 
-- Kind or Minikube installed locally
+- A Linux host or VM to install [k3s](https://k3s.io/) on
 - `istioctl` installed
 
 ## Steps
@@ -20,7 +20,10 @@ Deploy a multi-version microservice app and split traffic between two versions b
 ### 1. Create a local cluster
 
 ```bash
-kind create cluster
+curl -sfL https://get.k3s.io | sh -
+
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+sudo chmod 644 /etc/rancher/k3s/k3s.yaml
 ```
 
 ### 2. Install Istio with the demo profile
@@ -90,7 +93,7 @@ Refresh `http://localhost:8080/productpage` about 20 times. Roughly 9 out of 10 
 ## Cleanup
 
 ```bash
-kind delete cluster
+/usr/local/bin/k3s-uninstall.sh
 ```
 
 ## Key takeaways
