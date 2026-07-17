@@ -72,7 +72,7 @@ The ping succeeds — both VMs are on the same subnet even though they live in d
 ## Cleanup
 
 ```bash
-gcloud compute instances delete vm-a vm-b --zone=europe-west9-a --quiet
+gcloud compute instances delete vm-a --zone=europe-west9-a --quiet
 gcloud compute instances delete vm-b --zone=europe-west9-b --quiet
 gcloud compute firewall-rules delete pca-allow-internal --quiet
 gcloud compute networks subnets delete pca-subnet --region=europe-west9 --quiet

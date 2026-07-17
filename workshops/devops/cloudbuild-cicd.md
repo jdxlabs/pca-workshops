@@ -13,32 +13,60 @@ Define a build pipeline in `cloudbuild.yaml` that builds a container image and d
 ## Prerequisites
 
 - A GCP project with Cloud Build, Artifact Registry, and Cloud Run APIs enabled
-- A minimal app with a `Dockerfile` (any "hello world" HTTP server works)
 
 ## Steps
 
-### 1. Write `cloudbuild.yaml`
+### 1. Write a minimal app and its `Dockerfile`
+
+Cloud Run needs an HTTP server listening on `$PORT` (defaults to `8080`). Create `app.py`:
+
+```python
+from flask import Flask
+import os
+
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "hello from pca-app"
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
+```
+
+And `Dockerfile` next to it:
+
+```dockerfile
+FROM python:3.12-slim
+RUN pip install --no-cache-dir flask
+COPY app.py .
+CMD ["python", "app.py"]
+```
+
+### 2. Write `cloudbuild.yaml`
 
 ```yaml
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'europe-west9-docker.pkg.dev/PROJECT_ID/pca-repo/app', '.']
+    args: ['build', '-t', 'europe-west9-docker.pkg.dev/$PROJECT_ID/pca-repo/app', '.']
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'europe-west9-docker.pkg.dev/PROJECT_ID/pca-repo/app']
+    args: ['push', 'europe-west9-docker.pkg.dev/$PROJECT_ID/pca-repo/app']
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       - run
       - deploy
       - pca-app
-      - --image=europe-west9-docker.pkg.dev/PROJECT_ID/pca-repo/app
+      - --image=europe-west9-docker.pkg.dev/$PROJECT_ID/pca-repo/app
       - --region=europe-west9
       - --allow-unauthenticated
 images:
-  - 'europe-west9-docker.pkg.dev/PROJECT_ID/pca-repo/app'
+  - 'europe-west9-docker.pkg.dev/$PROJECT_ID/pca-repo/app'
 ```
 
-### 2. Create the Artifact Registry repository
+`$PROJECT_ID` is a [built-in Cloud Build substitution](https://cloud.google.com/build/docs/configuring-builds/substitute-variable-values) — Cloud Build resolves it automatically to whichever project the build runs in. No need to hardcode or `sed`-replace your project ID.
+
+### 3. Create the Artifact Registry repository
 
 ```bash
 gcloud artifacts repositories create pca-repo \
@@ -46,7 +74,7 @@ gcloud artifacts repositories create pca-repo \
   --location=europe-west9
 ```
 
-### 3. Run the pipeline manually first
+### 4. Run the pipeline manually first
 
 ```bash
 gcloud builds submit --config=cloudbuild.yaml .
@@ -58,7 +86,7 @@ Watch the three steps execute in order: build, push, deploy. Confirm the service
 gcloud run services describe pca-app --region=europe-west9 --format='value(status.url)'
 ```
 
-### 4. Wire it to a push trigger (if your sandbox permits repo connections)
+### 5. Wire it to a push trigger (if your sandbox permits repo connections)
 
 ```bash
 gcloud builds triggers create github \
@@ -70,7 +98,7 @@ gcloud builds triggers create github \
 
 If your sandbox project doesn't allow connecting an external repository, this step is informational — the manual `gcloud builds submit` in step 3 already proves the pipeline itself.
 
-### 5. Push a commit and watch the trigger fire
+### 6. Push a commit and watch the trigger fire
 
 ```bash
 git commit --allow-empty -m "trigger cloud build"

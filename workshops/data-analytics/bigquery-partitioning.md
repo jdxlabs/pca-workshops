@@ -61,7 +61,7 @@ The dry run reports the full table size scanned (e.g. several GB).
 
 ```bash
 bq query --use_legacy_sql=false --dry_run \
-"SELECT start_station, COUNT(*) FROM pca_dataset.trips_partitioned WHERE trip_date = '2026-07-15' GROUP BY start_station"
+"SELECT start_station, COUNT(*) FROM pca_dataset.trips_partitioned WHERE trip_date = '2026-07-17' GROUP BY start_station"
 ```
 
 The bytes scanned drops sharply — BigQuery only reads the matching partition(s).

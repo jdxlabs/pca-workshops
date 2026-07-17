@@ -10,15 +10,28 @@ Workload Identity is the boundary between Kubernetes RBAC and Google Cloud IAM �
 
 Bind a Kubernetes Service Account to a Google Service Account via Workload Identity, then prove a pod can call a Google Cloud API using that identity with **zero exported credentials**.
 
+> This workshop is **GKE-only** — unlike the other K8s workshops in this repo, it has no local k3s equivalent. Workload Identity works by having the pod talk to Google's metadata server to exchange its Kubernetes identity for a short-lived GCP token; a local k3s cluster has no such metadata server, so there's nothing to bind to. Simulating it with a mounted key file would defeat the entire point of the exercise (no exported credentials).
+
 ## Prerequisites
 
-- A GKE **Autopilot** cluster (Workload Identity is on by default)
-- `gcloud` and `kubectl` configured against the cluster
+- A GCP project with the GKE API enabled
 - A Cloud Storage bucket to test read access against
 
 ## Steps
 
-### 1. Create the Google Service Account (GSA)
+### 1. Create a GKE Autopilot cluster
+
+```bash
+gcloud components install gke-gcloud-auth-plugin
+gcloud components install kubectl
+
+gcloud container clusters create-auto pca-cluster --region=europe-west9
+gcloud container clusters get-credentials pca-cluster --region=europe-west9
+```
+
+Autopilot enables Workload Identity by default — no extra flag needed.
+
+### 2. Create the Google Service Account (GSA)
 
 ```bash
 gcloud iam service-accounts create mon-gsa-test
@@ -32,14 +45,14 @@ gcloud storage buckets add-iam-policy-binding gs://YOUR_BUCKET \
   --role=roles/storage.objectViewer
 ```
 
-### 2. Create the Kubernetes Service Account (KSA)
+### 3. Create the Kubernetes Service Account (KSA)
 
 ```bash
 kubectl create namespace test-ns
 kubectl create serviceaccount mon-ksa-test -n test-ns
 ```
 
-### 3. Bind KSA to GSA (Workload Identity)
+### 4. Bind KSA to GSA (Workload Identity)
 
 ```bash
 gcloud iam service-accounts add-iam-policy-binding \
@@ -48,14 +61,14 @@ gcloud iam service-accounts add-iam-policy-binding \
   --member "serviceAccount:PROJECT_ID.svc.id.goog[test-ns/mon-ksa-test]"
 ```
 
-### 4. Annotate the KSA
+### 5. Annotate the KSA
 
 ```bash
 kubectl annotate serviceaccount mon-ksa-test -n test-ns \
   iam.gke.io/gcp-service-account=mon-gsa-test@PROJECT_ID.iam.gserviceaccount.com
 ```
 
-### 5. Deploy a test pod using the KSA
+### 6. Deploy a test pod using the KSA
 
 ```bash
 kubectl run wi-test --image=google/cloud-sdk:slim -n test-ns \
@@ -63,7 +76,7 @@ kubectl run wi-test --image=google/cloud-sdk:slim -n test-ns \
   --command -- sleep 3600
 ```
 
-### 6. Verify the borrowed identity, no key file involved
+### 7. Verify the borrowed identity, no key file involved
 
 ```bash
 kubectl exec -it wi-test -n test-ns -- gcloud storage ls gs://YOUR_BUCKET
@@ -76,6 +89,7 @@ The listing succeeds — the pod authenticated as `mon-gsa-test`, entirely throu
 ```bash
 kubectl delete namespace test-ns
 gcloud iam service-accounts delete mon-gsa-test@PROJECT_ID.iam.gserviceaccount.com --quiet
+gcloud container clusters delete pca-cluster --region=europe-west9 --quiet
 ```
 
 ## Key takeaways

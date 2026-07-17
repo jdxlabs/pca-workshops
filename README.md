@@ -2,7 +2,7 @@
 
 Hands-on workshops for the Google Cloud **Professional Cloud Architect (PCA)** certification. Each workshop is a self-contained Markdown file with an objective, step-by-step commands, cleanup, and exam takeaways.
 
-Most workshops run on the GCP free tier, and some run fully locally (no cloud cost at all).
+Most workshops run on GCP (free tier / GKE Autopilot monthly credit). The Kubernetes workshops are **hybrid**: run them on GKE Autopilot or on a local k3s cluster, whichever is easier for you — except Workload Identity, which is GKE-only (see that workshop for why).
 
 ## Index
 
@@ -43,20 +43,20 @@ Most workshops run on the GCP free tier, and some run fully locally (no cloud co
 | Workshop | Level | Cost |
 |---|---|---|
 | [IAM Least Privilege: Scoping a Service Account to One Bucket](workshops/security/least-privilege-service-accounts.md) | Beginner | Free tier |
-| [GKE Workload Identity: KSA ↔ GSA Binding](workshops/security/gke-workload-identity.md) | Intermediate | Free tier |
-| [Visualizing Network Policies with Cilium & Hubble](workshops/security/cilium-network-policies.md) | Intermediate | Free (local) |
+| [GKE Workload Identity: KSA ↔ GSA Binding](workshops/security/gke-workload-identity.md) (GKE-only) | Intermediate | Free tier (GKE Autopilot credit) |
+| [Kubernetes Network Policies](workshops/security/network-policies.md) (hybrid) | Beginner | Free tier (GKE) or free (local) |
 
 ### Service Mesh
 
 | Workshop | Level | Cost |
 |---|---|---|
-| [Traffic Splitting with Istio (Cloud Service Mesh, Local Edition)](workshops/service-mesh/istio-traffic-splitting.md) | Intermediate | Free (local) |
+| [Traffic Splitting with Istio / Cloud Service Mesh](workshops/service-mesh/traffic-splitting.md) (hybrid) | Intermediate | Free tier (GKE) or free (local) |
 
 ### Observability & SRE
 
 | Workshop | Level | Cost |
 |---|---|---|
-| [SRE Signals: Liveness/Readiness Probes & Uptime Checks](workshops/observability/probes-and-uptime-checks.md) | Intermediate | Free (local) + Free tier |
+| [SRE Signals: Liveness/Readiness Probes & Uptime Checks](workshops/observability/probes-and-uptime-checks.md) (hybrid) | Intermediate | Free tier + GKE credit or free (local) |
 
 ### DevOps & IaC
 
