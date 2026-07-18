@@ -37,6 +37,7 @@ Most workshops run on GCP (free tier / GKE Autopilot monthly credit). The Kubern
 | Workshop | Level | Cost |
 |---|---|---|
 | [Your First Support Agent (Gemini Enterprise Agent Platform)](workshops/ai/gemini-enterprise-support-agent.md) | Beginner | Free tier |
+| [Your First Playbook Agent (Gemini Enterprise Agent Platform)](workshops/ai/gemini-enterprise-playbook-agent.md) | Beginner | Free tier |
 
 ### Security
 
