@@ -13,7 +13,8 @@ Build a chat agent that grounds its answers in a document and correctly maintain
 ## Prerequisites
 
 - A GCP project with the Gemini Enterprise Agent Platform (formerly Vertex AI) APIs enabled
-- A short FAQ document (PDF) to use as grounding data — a fake "product support FAQ" works fine
+- A short FAQ document (PDF) to use as grounding data — [gemini-enterprise-support-agent_FAQ_file.pdf](gemini-enterprise-support-agent_FAQ_file.pdf), a real regulatory FAQ (French AGEC law / Decree 2022-748 on environmental product labeling) included alongside this exercise, works well because it has clearly numbered Q&A sections and cross-references between them — good for testing grounding and follow-up handling
+- A GCS bucket in the same project (needed for the import step below) — any bucket works, or let the console create one for you
 
 ## Steps
 
@@ -29,22 +30,26 @@ Navigate to **Gemini Enterprise Agent Platform** (console.cloud.google.com → s
 
 ### 3. Attach a data source
 
-- Choose **Playbook** for scripted behavior, or upload a **PDF document** as unstructured data.
-- If uploading a PDF, create a small fake FAQ first, e.g.:
-  - "How do I reset my password?"
-  - "What is your refund policy?"
-  - "How do I cancel a subscription?"
-- Wait for the data source to finish indexing.
+Data sources live in **Data Stores**, which you create and then attach to the agent — you can't just drag a file onto the agent itself, which is the part that trips people up.
+
+- From the agent's app, go to **Data** (or **Data Stores**) → **Create new data store**.
+- Choose **Cloud Storage** as the source type (this is what handles unstructured PDFs).
+- You'll see two options: point to an existing bucket/path, or **Upload files** directly from your browser. If you use the direct upload option, the console silently creates a GCS bucket behind the scenes and puts your file there — if you don't see an upload widget in your UI/region, that's why: fall back to uploading `gemini-enterprise-support-agent_FAQ_file.pdf` to a GCS bucket manually first (`gsutil cp` or the Cloud Storage console), then import from that `gs://` path instead.
+- Select **Unstructured documents** as the data type when prompted.
+- Give the data store a name (e.g. `agec-faq-store`) and create it.
+- Back in the agent, attach this data store as the agent's data source.
+- Wait for the data source to finish indexing (a few minutes for a single small PDF).
 
 ### 4. Test in the simulator
 
 Open the built-in chat simulator and try:
 
-1. A direct question: *"How do I reset my password?"*
-2. A vague follow-up referencing the previous answer: *"And what if I don't have access to my email anymore?"*
-3. A conditional: *"What happens if I do that after my subscription already expired?"*
+1. A direct question: *"What is the annual turnover threshold for the information obligation since January 2025?"* (answer is in §1.1.2 — €10 million / 10,000 units)
+2. A vague follow-up referencing the previous answer: *"And does that apply to a distributor selling under its own brand?"*
+3. A conditional/cross-reference question: *"If a product contains 100% recycled material, how should that be stated on the product sheet?"* (answer is in §2.3.1)
+4. A question the document does **not** answer, to check the agent doesn't hallucinate: *"What is the fine for late GDPR breach notification?"*
 
-Observe how the agent uses the indexed document to ground factual answers, and how it carries context from turn to turn without you repeating the subject.
+Observe how the agent uses the indexed document to ground factual answers (including pulling specific numbers/thresholds), how it carries context from turn to turn without you repeating the subject, and whether it correctly declines to answer the out-of-scope question in step 4 rather than inventing one.
 
 ## Cleanup
 
