@@ -30,15 +30,18 @@ gcloud storage cp trips.csv gs://pca-workshop-<bucket-suffix>/trips.csv
 bq mk --location=EU pca_dataset
 ```
 
-### 3. Create a table partitioned by date
+### 3. Create a table partitioned by date and clustered by station
 
 ```bash
 bq mk --table \
   --time_partitioning_type=DAY \
   --time_partitioning_field=trip_date \
+  --clustering_fields=start_station \
   pca_dataset.trips_partitioned \
   trip_date:DATE,start_station:STRING,end_station:STRING,duration_sec:INTEGER
 ```
+
+Clustering sorts data within each partition's storage blocks by `start_station`. On its own this table already benefits from partition pruning (step 5); clustering adds block pruning on top when a query also filters on `start_station`, which matters most on large tables where a partition still spans many GB.
 
 Load the data:
 
@@ -66,6 +69,15 @@ bq query --use_legacy_sql=false --dry_run \
 
 The bytes scanned drops sharply — BigQuery only reads the matching partition(s).
 
+### 6. Add a clustering filter and compare
+
+```bash
+bq query --use_legacy_sql=false --dry_run \
+"SELECT COUNT(*) FROM pca_dataset.trips_partitioned WHERE trip_date = '2026-07-17' AND start_station = 'Market St at 10th St'"
+```
+
+Compare the bytes scanned against the same query without the `start_station` filter. On a small demo CSV the dry-run estimate may show little or no difference (BigQuery clusters at the storage-block level, and a small partition can fit in a single block). The effect becomes measurable on tables with enough rows per partition — call this out explicitly if the estimates look identical, rather than treating it as a workshop failure.
+
 ## Cleanup
 
 ```bash
@@ -78,4 +90,5 @@ gcloud storage rm -r gs://pca-workshop-<bucket-suffix>
 
 - Partition pruning happens automatically when the filter is on the partitioning column.
 - Cost and latency both drop — this is why table design is a first-class architecture decision, not an afterthought.
+- Clustering complements partitioning: it prunes storage blocks within a partition when the query also filters on the clustered column(s) — its benefit shows up mainly at scale, not on small demo tables.
 - For TerramEarth-style case studies, combine partitioning with clustering on high-cardinality filter columns for further savings.
